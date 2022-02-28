@@ -1,27 +1,27 @@
 #include<stdio.h>
-#include<string.h>
-int main()
+void main()
 {
-int i=0,count=0;
-char databits[80];
-printf("enter databits\n");
-scanf("%s" ,databits);
-printf("databits before stuffing %s\n",databits);
-printf("after stuffing\n");
-for(i=0;i<strlen(databits);i++)
+int data[20],i,c1,c2,c3,c,rec[20];
+printf("enter the message");
+scanf("%d%d%d%d",&data[0],&data[1],&data[2],&data[4]);
+data[5]=data[0]^data[1]^data[4];
+data[6]=data[4]^data[2]^data[0];
+data[3]=data[2]^data[1]^data[0];
+printf("encoding bits are:");
+for(i=0;i<7;i++)
 {
-if(databits[i]=='1')
+scanf("%d",&rec[i]);
+c1=rec[6]^rec[4]^rec[2]^rec[0];
+c2=rec[5]^rec[4]^rec[1]^rec[0];
+c3=rec[3]^rec[2]^rec[1]^rec[0];
+c=c3*4+c2*2+c1;
+if(c==0)
 {
-count++;
+printf("ther are no error");
 }
 else
-count=0;
-printf("%c",databits[i]);
-if(count==5)
 {
-printf("0");
-count=0;
+printf("there is a error");
 }
 }
-return 0;
 }
