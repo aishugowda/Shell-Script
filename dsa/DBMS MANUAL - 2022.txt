@@ -1,0 +1,1105 @@
+1)Create the following tables with properly specifying Primary keys,foreign keys and solve the following queries.
+	
+	BRANCH(Branchid,Branchname,HOD)
+	STUDENT(USN,Name,Address,Branchid,Sem)
+	BOOK(Bookid,Bookname,Authorid,Publisher,Branchid)
+	AUTHOR(Authorid,Authorname,Country,Age)
+	BORROW(USN,Bookid,Borrowdate)
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:BRANCH
+	Create table BRANCH
+	(Branchid varchar(10)Primary key,
+	 Branchname varchar(10),
+	 HOD varchar(10));
+
+Insert into BRANCH(Branchid,Branchname,HOD)values("B01","MCA","ADO");
+-----------------------------------------
+Branchid	Branchname	HOD
+-----------------------------------------
+B01		MCA		ADO
+B02		MBA		ABC
+B03		MTech		XYZ
+B04		BE		PQR
+BO5		BCom		MNO
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:STUDENT
+	Create table STUDENT
+	(USN varchar(10)Primary key,
+	 Name varchar(10),
+	 Address varchar(50),
+	 Branchid varchar(10)references Branch,
+	 Sem number(1));
+
+
+Insert into STUDENT(USN,Name,Address,Branchid,Sem)values("4JN17MCA11","Jishi","#9,kallalli",2);
+
+------------------------------------------------------------------------------
+USN		Name		Address			Branchid	Sem
+------------------------------------------------------------------------------
+4JN17MCA11	Jishi		#9,kallalli		B01		2
+4JN17MCA37	Suraksha	#20,Vinobanagar		B01		2
+4JN17MCA08	Ananya		#11,Hudco		B01		1
+4JN17MBA10	Namitha		#5,Gopala		B02		2
+4JN17MBA01	Samanyu		#1,Bhadravathi		B02		1
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:BOOK
+	Create table BOOK
+	(Bookid varchar(10)Primary key,
+	 Bookname varchar(10),
+	 Authorid varchar(10)references Author,
+	 Publisher varchar(10),
+	 Branchid varchar(10)references Branch);
+
+
+Insert into BOOK(Bookid,Bookname,Authorid,Publisher,Branchid)values("BK01","DBMS","A01","KJF","B01");
+
+-------------------------------------------------------------------
+Bookid	Bookname	Authorid	Publisher	Branchid
+-------------------------------------------------------------------
+BK01	DBMS		A01		KJF		B01
+BK02	OOP		A05		UVW		B01
+BK03	DMS		A03		KJF		B01
+BK04	UNIX		A04		OPQ		B01
+BK05	C++		A02		KJF		B01
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:AUTHOR
+	Create table AUTHOR
+	(Authorid varchar(10)Primary key,
+	 Authorname varchar(10),
+	 Country varchar(10),
+	 Age number(2));
+
+
+Insert into AUTHOR(Authorid,Authorname,Country,Age)values("A01","Elmasri Navathe","India",44);
+
+--------------------------------------------------------------------
+Authorid	Authorname		Country		Age
+--------------------------------------------------------------------
+A01		Elmasri Navathe		India		44
+A02		Balguru Swami		India		50
+A03		Girimaldi		India		40
+A04		Sumitabadas		India		36
+A05		K R Venugopal		India		54
+A06		Dennis Richie		India		60
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:BORROW
+	Create table BORROW
+	(USN varchar(10)references STUDENT,
+	 Bookid varchar(10)references BOOK,
+	 Borrowdate date);
+
+
+Insert into BORROW(USN,,Bookid,Borrowdate)values("4JN17MCA11","BK01","2018-04-03");
+
+---------------------------------------
+USN		Bookid	Borrowdate
+---------------------------------------
+4JN17MCA11	BK01	2018-04-03
+4JN17MCA11	BK03	2018-03-04
+4JN17MCA37	BK02	2018-01-11
+4JN17MCA08	BK04	2018-02-05
+4JN17MCA37	BK01	2018-06-14
+4JN17MCA11	BK05	2018-05-11
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+a)List the details of students who are all studying in 2nd sem MCA
+	
+	select USN,Name,Address
+	from STUDENT S,BRANCH B
+	where S.Branchid=B.Branchid and Sem=2 and Branchname='MCA';
+
+------------------------------------------
+USN		Name		Address
+------------------------------------------
+4JN17MCA11	Jishi		#9,kallalli
+4JN17MCA37	Suraksha	#11,vinobanagar
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+b)List the students who are not borrowed any books
+
+	select Name
+	from STUDENT S
+	where NOT EXISTS
+	  (select * from BORROW B where B.USN=S.USN);
+
+----------
+Name
+----------
+Samanyu
+Ananya
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+c)Display the USN,student name,branch name,book name,author name,books borrowed date of 2nd sem MCA students.
+
+	select S.USN,Name,Branchname,Bookname,Authorname,Borrowdate
+	from BRANCH B,STUDENT S,BOOK BK,AUTHOR A,BORROW BR
+	where S.Branchid=B.Branchid and BR.USN=S.USN and BK.Bookid=BR.Bookid and BK.Authorid=A.Authorid and Sem=2 and Branchname='MCA';
+
+--------------------------------------------------------------------------------------------------------
+USN		Name		Branchname	Bookname	Authorname		Borrowdate
+--------------------------------------------------------------------------------------------------------
+4JN17MCA11	Jishi		MCA		DBMS		Elmasri Navathe		03-MAR-18
+4JN17MCA11	Jishi		MCA		DMS		Giri maldi		06-APR-18
+4JN17MCA37	Suraksha	MCA		OOP		K R Venugopal		01-SEP-18
+4JN17MCA37	Suraksha	MCA		DBMS		Elmasri Navathe		06-APR-18
+4JN17MCA11	Jishi		MCA		C		Dennis Richie		15-MAY-18
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+d)Display the number of books written by each author.
+
+	select Authorname,Count(*)
+	from AUTHOR A,BOOK BK
+	where A.Authorid=BK.Bookid
+	GROUP BY Authorname;
+
+-----------------------------------
+Authorname		Count(*)
+-----------------------------------
+BalguruSwami		1
+Dennis Richie		1
+Elmasri Navathe		2
+Girimaldi		1
+K R Venugopal		1
+Sumitabadas		1
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+e)Diplay the students details who borrowed more than two books.
+
+	select *
+	from STUDENT S
+	where(selectCount(*)
+	      from BORROW BR
+	      where BR.USN=S.USN)>2;
+
+-----------------------------------------------------------------
+USN		Name	Address		Branchid	Sem
+-----------------------------------------------------------------
+4JN17MCA11	Jishi	#9,kallalli	B01		2
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+f)Display the student details who borrowed books of more than one author.
+
+	select *
+	from STUDENT S
+	where (select count(DISTINCT A.Authorid)
+		from BOOK BK,AUTHOR A,BORROW BR
+		where BK.Authorid=A.Authorid and BR.Bookid=BK.Bookid and BR.USN=S.USN)>1;
+
+---------------------------------------------------------------------------------
+USN		Name		Address			Branchid	Sem
+---------------------------------------------------------------------------------
+4JN17MCA11	Jishi		#9,kallalli		B01		2
+4JN17MCA37	Suraksha	#11,vinobanagar		B01		2
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+g)Display the book names in descending order of their names
+
+	select Bookname
+	from BOOK
+	ORDER BY Bookname DESC;
+
+--------------
+Bookname
+--------------
+UNIX
+OOP
+JAVA
+DMS
+DBMS
+C++
+C
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+h)List the details of students who borrowed the books which are all published by the same publisher.
+
+	select *
+	from STUDENT S
+	where(select count(DISTINCT Publisher)
+		from BOOK BK,BORROW BR
+		where BR.Bookid=BK.Bookid and BR.USN=S.USN)=1 and USN in(select USN from BORROW GROUP BY USN HAVING COUNT(*)>1);
+-----------------------------------------------------------------
+USN		Name	Address		Branchid	Sem
+-----------------------------------------------------------------
+4JN17MCA11	Jishi	#9,kallalli	B01		2
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+*****************************************************************************************************************************************************
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+2)2. Consider the following schema:
+STUDENT (USN, name, date_of_birth, branch, mark1, mark2, mark3, total, GPA)
+Execute the following queries:
+i) Update the column total by adding the columns mark1, mark2, mark3.
+ii) Find the GPA score of all the students.
+iii) Find the students who born on a particular year of birth from the date_of_birth column.
+iv) List the students who are studying in a particular branch of study.
+v) Find the maximum GPA score of the student branch-wise.
+vi) Find the students whose name starts with the alphabet “S”.
+vii) Find the students whose name ends with the alphabets “AR”.
+viii) Delete the student details whose USN is given as 1001.
+
+	STUDENT (USN, name, date_of_birth, branch, mark1, mark2, mark3, total, GPA)	
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:STUDENT
+	Create table STUDENT
+	(USN varchar(10)Primary key,
+	 name varchar(20),
+	 DOB date,
+	 branch varchar(10),
+	 marks1 number(3),
+         marks2 number(3),
+	 marks3 number(3),
+         total  number(3),
+         GPA    number(4,2);
+
+
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA001','Anand','21-may-1980','MCA',90,95,98);
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA002','Vijay','28-oct-1980','MCA',80,85,90);
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA003','Harish','02-Aug-1978','MBA',72,65,69);
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA004','Girish','14-mar-1980','MBA',60,65,70);
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA005','Sachin','10-sep-1980','MCA',70,80,88);
+Insert into STUDENT(USN,name,DOB,branch,marks1,marks2,marks3)values('MCA006','Kumar','28-may-1980','MCA',55,58,62);
+--------------------------------------------------------------------------------------------------------------
+USN	name	        DOB		branch		marks1	marks2	marks3   total	 GPA
+--------------------------------------------------------------------------------------------------------------
+MCA001	Anand		21-may-1980	MCA		  90      95      98 
+MCA002	Vijay		28-oct-1980	MCA		  80      85      90 
+MCA003	Harish		02-Aug-1978	MBA		  72      65      69 
+MCA004	Girish		14-mar-1980	MBA		  60      65      70 
+MCA005	Sachin		10-sep-1980	MCA		  70      80      88 
+MCA006	Kumar		28-may-1980	MCA		  55      58      62 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+a)Update the column total by adding the columns mark1, mark2, mark3.
+	
+   sql>update STUDENT set total=marks1+marks2+marks3;
+   
+   sql>6 Rows Updated
+   
+   sql>select * from STUDENT;
+        -------------------------------------------------------------------------- 
+	USN	NAME	   DOB  	BRANCH	MARKS1	MARKS2	MARKS3	TOTAL  GPA
+        --------------------------------------------------------------------------     
+	MCA001	Anand	21-MAY-80	MCA	90	95	98	283	-
+	MCA002	Vijay	28-OCT-80	MCA	80	85	90	255	-
+	MCA003	Harish	02-AUG-78	MBA	72	65	69	206	-
+	MCA004	Girish	14-MAR-80	MBA	60	65	70	195	-
+	MCA005	Sachin	10-SEP-80	MCA	70	80	88	238	-
+	MCA006	Kumar	28-MAY-80	MCA	55	58	62	175	-
+
+
+
+b) Find the GPA score of all the students.
+
+    sql>SELECT TRUNC(((marks1+marks2+marks3)/3)/9.5,2) GPA FROM STUDENT
+	----------------------------------------
+        	          GPA
+	----------------------------------------
+			9.92
+			8.94
+			7.22
+			6.84
+			8.35
+			6.14
+
+    sql>UPDATE STUDENT SET GPA=TRUNC(((marks1+marks2+marks3)/3)/9.5,2) 
+    sql>6 row(s) updated.
+    sql>Select * from STUDENT;
+    sql>
+        ----------------------------------------------------------------------------
+	USN	NAME	   DOB		BRANCH	MARKS1	MARKS2	MARKS3	TOTAL	GPA
+        ----------------------------------------------------------------------------
+	MCA001	Anand	21-MAY-80	MCA	90	95	98	283	9.92
+	MCA002	Vijay	28-OCT-80	MCA	80	85	90	255	8.94
+	MCA003	Harish	02-AUG-78	MBA	72	65	69	206	7.22
+	MCA004	Girish	14-MAR-80	MBA	60	65	70	195	6.84
+	MCA005	Sachin	10-SEP-80	MCA	70	80	88	238	8.35
+	MCA006	Kumar	28-MAY-80	MCA	55	58	62	175	6.14
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+c)Find the students who born on a particular year of birth from the date_of_birth column
+
+	sql>select * from STudent where DOB like '_______78';
+
+-----------------------------------------------------------------------------
+USN	NAME	DOB		BRANCH	MARKS1	MARKS2	MARKS3	TOTAL	GPA
+-----------------------------------------------------------------------------
+MCA003	Harish	02-AUG-78	MBA	72	65	69	206	7.22
+-----------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+d)List the students who are studying in a particular branch of study.
+
+	sql>select * from STUDENT Where BRACH='MCA';
+----------------------------------------------------------------------------
+USN	NAME	DOB		BRANCH	MARKS1	MARKS2	MARKS3	TOTAL	GPA
+----------------------------------------------------------------------------
+MCA001	Anand	21-MAY-80	MCA	90	95	98	283	9.92
+MCA002	Vijay	28-OCT-80	MCA	80	85	90	255	8.94
+MCA005	Sachin	10-SEP-80	MCA	70	80	88	238	8.35
+MCA006	Kumar	28-MAY-80	MCA	55	58	62	175	6.14
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+e)Find the maximum GPA score of the student branch-wise.
+           sql>select gpa as MAX_GPA,name,branch from student where gpa in(select max(gpa) from student group by branch);
+		----------------------
+		MAX_GPA	NAME	BRANCH
+		----------------------
+		9.92	Anand	MCA
+		7.22	Harish	MBA
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+f)Find the students whose name starts with the alphabet “S”.
+	sql>select * from STUDENT where name like 'S%';
+		----------------------------------------------------------------------------
+		USN	NAME	DOB		BRANCH	MARKS1	MARKS2	MARKS3	TOTAL	GPA
+		----------------------------------------------------------------------------
+		MCA005	Sachin	10-SEP-80	MCA	70	80	88	238	8.35
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+e)Find the students whose name ends with the alphabets “AR”.
+	sql>select * from STUDENT where name like '%ar';
+	----------------------------------------------------------------------------
+        USN	NAME	DOB		BRANCH	MARKS1	MARKS2	MARKS3	TOTAL	GPA
+	------------------------------------------------------------------------------
+	MCA006	Kumar	28-MAY-80	MCA	55	58	62	175	6.14
+
+f)Delete the student details whose USN is given as MCA006.
+
+	sql> Delete from STUDENT where usn='MCA006';
+	SQL> 1 row(s) deleted.
+
+********************************************************************************************************************************************************************
+3)Design an ER diagram for the following scenario,convert the same ito a relational model and then solve  the following queries.
+Consider a cricket tournament "ABC CUP" organized by an organization.In the tournamet there are many teams are contesting each having a Teamid,Team-name,City,a coach.Each team is uniquely identified by using Teanid.A team can have many players and a captain.Each player is uniquely identified by Playerid,having a name,and multiple phone numbers,age.A player represents only one team.There are many stdiums to conduct matches.Each is identified using Stadiumid,having a Stadium name,Address.A team can play many matches.Each match is identified uniquely by using Matchid.Each match won  by any of the team that also wants to record in the database.For each match man of the match award is given to a player.
+
+	TEAM(Teamid,Teamname,City,Coach,Captain)
+	PLAYER(Playerid,Name,Age,Teamid)
+	STADIUM(Stadiumid,Stadiumname,Address)
+	MATCH(Matchid,Team1,Team2,Date,Time,Stadium)
+	RESULT(Matchid,Teamwon,Manofthematch)
+	PHONENO(Playerid,Phone)
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:TEAM
+	Create table TEAM
+	(Teamid varchar(10)Primary key,
+	 Teamname varchar(10),
+	 City varchar(10),
+	 Coach varchar(10),
+	 Captain varchar(10)references PLAYER);
+
+
+Insert into TEAM(Teamid,Teamname,City,Coach,Captain)values("T001","RCB","Banglore","Dravid","P001");
+-------------------------------------------------------------------
+Teamid	Teamname	City		Coach		Captain
+-------------------------------------------------------------------
+T001	RCB		Banglore	Dravid		P001
+T002	CSK		Chennai		Vettori		P002
+T003	KKR		Kolkata		Ravishastri	P003
+T004	DD		Delhi		Gavaskar	P004
+T005	MI		Mumbai		Jayavardane	P005
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:PLAYER
+	Create tablr PLAYER
+	(Playerid varchar(10)Primary key,
+	 Name varchar(10),
+	 Age number(2),
+	 Teamid varchar(10)references TEAM);
+
+
+Insert into PLAYER(Playerid,Name,Age,Teamid)values("P001","Kohli",34,"T001");
+-------------------------------------------------------
+Playerid	Name		Age	Teamid
+-------------------------------------------------------
+P001		Kohli		34	T001
+P002		Dhoni		36	T002
+P003		Uthappa		32	T003
+P004		Gambhir		33	T004
+P005		R.Sharma	30	T005
+P006		UV		37	T002
+P007		Zaheer		38	T001
+P008		Abhishek nair	28	T003
+P009		Irfan pathan	31	T004
+P010		Staurt binni	29	T005
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:STADIUM
+	Create table STADIUM
+	(Stadiumid varchar(10)Primary key,
+	 Name varchar((10),
+	 City varchar(10),
+	 Area varchar(20),
+	 PIN number(10));
+
+
+Insert into STADIUM(Stadiumid,Name,City)values("S001","Firozshah","Delhi");
+
+-------------------------------------------------------
+Stadiumid	Name		City	 Area	PIN
+-------------------------------------------------------
+S001		Firozshah	Delhi		
+S002		Chinnaswami	Banglore		
+S003		Wankade		Mumbai		
+S004		Chidambaram	Chennai		
+S005		Eden garden	Kolkata	
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+TABLE:MATCH
+	Create table MATCH
+	(Matchid varchar(10)Primary key,
+	 Team1 varchar(10)references TEAM,
+	 Team2 varchar(10)references TEAM,
+	 Date date,
+	 Time varchar(10),
+	 Stadium varchar(10)references STADIUM);
+
+
+Insert into MATCH(Matchid,Team1,Team2,Date,Time,Stadium)values("M001","T001","T002","03-APR-18","9:30","S001");
+-------------------------------------------------------------
+Matchid	Team1	Team2	Date		Time	Stadium
+-------------------------------------------------------------
+M001	T001	T002	03-APR-18	9:30	S001
+M002	T003	T004	05-APR-18	2:30	S002
+M003	T004	T005	07-APR-18	2:30	S002
+M004	T001	T003	08-APR-18	9:30	S003
+M005	T002	T005	09-APR-18	9:30	S004
+M006	T003	T005	11-APR-18	2:30	S005
+M007	T001	T004	12-APR-18	9:30	S002
+M008	T004	T002	14-APR-18	2:30	S002
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:RESULT
+	Create table RESULT
+	(Matchid varchar(10)references MATCH,
+	 Teamwon varchar(10)references TEAM,
+	 Manofthematch varchar(10)references PLAYER));
+
+
+Insert into RESULT(Matchid,Teamwon,Manofthematch)values("M001","T001","P001");
+
+----------------------------------
+Matchid	Teamwon	Manofthematch
+----------------------------------
+M001	T001	P001
+M002	T004	P009
+M003	T004	P009
+M004	T003	P008
+M005	T005	P010
+M006	T003	P003
+M007	T004	P004
+M008	T004	P009
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+TABLE:PHONENO
+	Create table PONENO
+	(Playerid varchar(10)references PLAYER,
+	 PHNO number(10));
+
+
+Insert into PHONENO(Playerid,PHNO)values("P001",9876543210);
+------------------------------
+Playerid	PHNO
+------------------------------
+P001		9876543210
+P002		-------
+P003		-------
+P004		-------
+P005		-------
+P006		-------
+P007		-------
+P008		-------
+P009		-------
+P010		-------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+a)Display the youngest player name,team name,age in which they belongs of the tournament.
+	
+	select Name,Age,Teamname
+	from PLAYER P,TEAM T
+	where T.Teamid=P.Teamid
+	and  Age=(select MIN(Age) from PLAYER);
+---------------------------------------
+Name		Age	Teamname
+---------------------------------------
+Abhishek nair	28	RCB
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+b)Display the youngest  player name,team name,age in which he belongs of tournament from each team.
+
+	select Name,Age,Teamname
+	from PLAYER P,TEAM T
+	where T.Teamid=P.Teamid and Age=(select MIN(Age) from PLAYER where Teamid=T.Teamid);
+-----------------------------------------
+Name		Age	Teamname
+-----------------------------------------
+Zaheer		27	RCB
+UV		29	CSK
+Abhishek nair	33	KKR
+Irfan pathan	29	DD
+Staurt Binni	32	MI
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+c)List the details of stadium where the maximum number of matches were played.
+
+	select * from STADIUM
+	where Stadiumid=(select Stadium from MATCH GROUP BY STADIUM having count(*)=(select MAX(Count(*))from MATCH GROUP BY STADIUM));
+---------------------------------------------------------------------------
+Stadiumid	Stadiumname	City		Area		PIN
+---------------------------------------------------------------------------
+S002		Chinnaswamy	Banglore	Rajajinagar	643217
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+d)List the details of the player who is not a captain but got the man of the match award atleast in 2 matches.
+
+	select * from PLAYER
+	where Playerid=(select Manofthematch from RESULT R,TEAM T where R.Teamwon=T.Teamid and Captain<>Manofthematch GROUP BY Manofthematch having 	COUNT(*)>2);
+-------------------------------------------------------
+Playerid	Name		Age	Teamid
+-------------------------------------------------------
+P009		Irfan pathan	29	T009
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+e)Display the team details who won maximum matches.
+
+	select * from TEAM where Teamid in
+	(select Teamwon from RESULT GROUP BY Teamwon having count(*)=(select MAX(count(*))from Result GROUP BY Teamwon));
+--------------------------------------------------------------
+Teamid	Teamname	City	Coach		Captain
+--------------------------------------------------------------
+T004	DD		Delhi	Gavaskar	P004
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+f)Display the team name where all its won matches played in the same stadium.
+
+	select Teamname from TEAM T where(select COUNT(DISTINCT Stadium)from RESULT R,Match M where R.Matchid=M.Matchid and R.Teamwon=T.Teamid
+	Teamid in(select Teamwon from RESULT GROUP BY Teamwon having count(*)>1);
+--------------
+Teamname
+--------------
+DD
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+a)Display the details of employees who are working on both the projects having project no 5 and 10.
+
+	select * from EMPLOYEE
+	where Empid in(select Empid from WORKSON where PNO='P005' and PN0='P010' GROUP BY Empid having count(*)=2);
+
+--------------------------------------------------------------------------------
+Empid	Empname	  HNO	  City		District	State	PIN	DNO
+--------------------------------------------------------------------------------
+E003	Sanjan	  632	  Mysore	Mysore		KAR	89235	D001
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+b)Display the details of employees having atleast two dependents.
+
+	select * from EMPLOYEE E
+	where (select count(*) from DEPENDENT D where E.Empid=D.Empid)>=2;
+
+----------------------------------------------------------------------------------
+Empid	Empname	HNO	City	District	State	PIN	SuID	DNO
+----------------------------------------------------------------------------------
+E003	Sanjan	632	Mysore	Mysore		KAR	892345	E005	D001
+E007	Jasmine	549	BDVT	Shimoga		KAR	577201	E008	D004
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+c)Display the project name on which more number of employees are working.
+
+	select Pname from PROJECT where PNO in(select PNO from WORKSON GROUP BY PNO having count(*)=(select(MAX(count(*))) from WORKSON GROUP BY 	PNO));
+
+-------
+Pname
+-------
+Techno
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+d)Retrieve the employees who do not have any dependents.
+	
+	select * from EMPLOYEE E where not exists(select * from DEPENDENTS D where E.Empid=D.Empid);
+
+-------------------------------------------------------------------------------------------
+Empid	Empname	HNO	City		District	State	PIN	SuID	DNO
+-------------------------------------------------------------------------------------------
+E002	Swapna	41	Manglore	Manglore	KAR	768345	E002	D002
+E004	Hamsa	79	Shimoga		Shimoga		KAR	577201	E006	D004
+E005	Riya	88	Udupi		Udupi		KAR	438945	E004	D003
+E006	Amritha	137	Amritha		Amritha		KAR	238345	E005	D005
+E008	Anu	312	Banglore	Banglore	KAR	678345	E002	D003
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+e)Display the employee details whose total number of hours per week working on various projects is MAX.
+
+	select * from EMPLOYEE where Empid in(select Empid from WORKSON GROUP BY Empid having SUM(No_Of_hours)=(select MAX(SUM(No_Of_hours))from 	WORKSON GROUP BY Empid));
+
+------------------------------------------------------------------------------------------
+Empid	Empname	HNO	City		District	State	PIN	SuID	DNO
+------------------------------------------------------------------------------------------
+E003	Sanjan	632	Mysore		Mysore		KAR	892345	E005	D001
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+f)Create a view to display the display the no.of employees working in each department.
+
+	create view Emp_Dept
+	as select Dname,count(*) as No_of_Emp from EMPLOYEE E DEPARTMENT D where E.DNO=D.DNO GROUP BY Dname
+
+	view created.
+	
+	select * from Emp_Dept;
+---------------------------------------------
+	Dname		No_of_Emp
+---------------------------------------------
+	Research	2
+	Management	1
+	HR		2
+	Headquarters	2
+	Scientific	1
+	
+------------------------------------------------------------------------------------------------------------------------------------------------
+************************************************************************************************************************************************
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+4.Design an ER diagram for the following senario Convert the same into a relational model,normalize relations into a suitable Normal form and then solve the following queries A country can have many Tourist places.Each Tourist place is identified by using touriest_place_id having a name,belongs to a state,Number of kilometers away from the capitalcity of that state,history.  There are many tourists visits tourist places every year.Each tourist is identified uniquely by using Tourist_id,having a Name,age,Country and multiple emailides.A touriest visits many Touriest palces,it is also required to record the visited_date in the database.A touriest can visit a Tourist place many times at differnt dates.A Touriest place can be visited by many touriests either in the same date or at different dates.
+
+Table:PLACE
+create table PLACE
+         (PID varchar(10)Primary key,
+          Pname varchar(15),
+          State varchar(15),
+          Distance number(6),
+          History varchar(20));
+
+Insert into PLACE (PID,Pname,State,Distance,History)values('P001','Jogfalls','Karnataka',256,'Sharavthidam');
+--------------------------------------------------------------------------------------------------------------
+PID	PNAME	  	STATE		DISTANCE	HISTORY
+--------------------------------------------------------------------------------------------------------------
+P001	Jogfalls	Karnataka	256		Sharavathi dam	
+P002	Palace		Karnataka	435		Historic
+P003	Golgumbuz	Karnataka	572		Echo
+P004	Thar Desert	Rajasthan	315		Natures Wonder
+P005	Marina Beach	Tamilnadu	296		Natures Wonder
+P006	Tirupathi	A.P		446		Devine
+P007	Munar		Kerala		606		Back Water
+P008    Ajantha caves	Maharashtra	796		Echo
+P009	Tajmahal	Delhi		896		Shahjahan
+P010	Red Fort	Delhi		999		Mughal
+--------------------------------------------------------------------------------------------------------------
+
+Table:TOURIST
+create table TOURIST
+         (TID varchar(10)Primary key,
+          Tname varchar(15),
+          Age number(2),
+          Country varchar(20));
+
+Insert into TOURIST(TID,Tname,Age,Country)values('T001','OH Hane',35,'South korea')
+-----------------------------------------------------------------------------------------------
+TID		TNAME		AGE		COUNTRY
+-----------------------------------------------------------------------------------------------
+T001		OH Hane		35		South korea
+T002		Back Seng JO	24		South korea
+T003		Bung Jung Go	31		China
+T004		Steve		45		Australia
+T005		Tanushree	22		India
+----------------------------------------------------------------------------------------------
+
+Table:VISIT
+create table VISIT
+            (TID varchr(10)references TOURIST,
+            PID varchar(10) references PLACE,
+            Date1 date,
+            primary key(tid,pid));
+---------------------------------------------------------------------------------------------------
+TID		PID		Date
+-------------------------------------------------------------------------------------------
+T001		P001		23JAN18
+T002		P009		25JAN18
+T003		P009		23JAN18
+T004		P009		03FEB18
+T005		P009		02FEB18
+T003		P004		21FEB18
+T005		P001		29JAN18
+T005		P004		26JAN18
+T005		P005		09FEB18
+T005		P006		09FEB18
+T005		P007		08FEB18
+T005		P008		16FEB18
+T005		P010		11MAR18
+T001		P002		18FEB18
+T001		P003		07JUL18
+
+-----------------------------------------------------------------------------------------------
+
+
+Table:EMAIL
+create table EMAIL
+       (TID varchar(10)references TOURIST,
+        EMAIL varchar(20));
+
+Insert into EMAIL(TID,EMAIL)values('T001','T001@gamil.com');
+----------------------------------------
+TID		EMAIL
+----------------------------------------
+T001		T001@gmail.com
+T002		T002@gmail.com
+T003		T003@gmail.com
+T004		T004@gmail.com
+T005		T005@gmail.com
+-----------------------------------------
+
+Quaries
+1)List the state name which is having maximum numbers of touries places
+	select state from PLACE group by State having count(*)=(select MAX(count(*))from Place GROUP BY state);
+---------------
+STATE
+---------------
+Karnataka
+---------------
+
+
+
+2)List details of Tourist places where maximum number of tourists visited
+	select * from place where pid in(select pid from VISIT GROUP BY PID having count(*)=(select MAX(count(*))from visit group by pid))
+------------------------------------------------------------------------
+PID		PNAME		STATE		DISTANCE	HISTORY
+----------------------------------------------------------------------------
+P009		Tajmahal	Delhi		567		ShaJahan
+--------------------------------------------------------------------------------
+
+
+
+3)List the details of tourists visited all tourist places of the state 'Karnataka'
+	select * from TOURIST where TID in(select TID from VISIT V,PLACE P where V.PID=P.PID and state='Karnataka' 
+	GROUP BY V.TID having count(distinct pname)=(select count(*) from place where state='Karnataka'));
+-----------------------------------------------------------
+TID		TNAME		AGE		Country
+--------------------------------------------------------------
+T002		BaekSngJo	24		South korea
+---------------------------------------------------------------
+
+
+
+
+4)Display the details of touriests visited atlist one tourist place of state,but visited all states tourist places
+
+select * from tourist t where 
+(select count(distinct state) from visit v, place p where v.pid=p.pid and t.tid=v.tid)=(select count(distinct state) from place)
+
+--------------------------------------------------------------------------------
+TID		Iname		Age		Country
+-------------------------------------------------------------------
+T005		Tanushree	22		India
+---------------------------------------------------------------------
+
+
+
+
+5)Display the details of the tourist place visited by the tourist off all country
+	select * from PLACE P
+	where(select count(distinct COUNTRY)from VISIT V,TOURIST T
+	where V.PID=P.PID
+	and T.TID=V.TID)=(select count(distnct COUNTRY)from TOURIST)
+-------------------------------------------------------------------
+PID	Pname		State		Distance		History
+----------------------------------------------------------------------------
+P009 	Tajmahal	Delhi		 567		       Shahajahan
+------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+*********************************************************************************************************************************************
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+5.Design an ER diagram for the following scenario,Convert the same into a relational model,normalize relations into suatable normal from and then solve the queries:
+	A country wants to conduct an election for parliment.A country having many constituencies.Each constituency is uniquely identified by Constituency id,having the Name,
+belongs to a state,Number_of_voters.A constituency can have many voters.Each voter is uniquly identified by using Voter_id,having the Name,age,address.Each voter belongs to only
+one constituency.There are many candidates contesting in the election.Each candidates are uniquely identified by using candidate_id,having Name,phone_no,age,state.A candidate belongs
+to only one party.There are many parties.Each party is uniquely identified by using Party_id,having Party_name,Party_symbol.A condidate can contest from many contituencies under a same
+party.A party can have many condidates contesting from differnt constituencies.No constituency having the candidates fron the same party.A constituency can have many contesting candidates
+belongs to different parties.Each voter votes only one candidate of his/her constituencty.
+
+
+Table:Constituency
+create table Constituency(CID varchar(10)primary key,
+CNAME varchar(10),
+State varchar(10),
+NO_OF_VOTERS number(10));
+
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C001','banglore','KAR',2);
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C002','chennai','TN',1);
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C003','Hyderabad','AP',1);
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C004','Kochi','Kerala',1);
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C005','Agra','UP',1);
+insert into Constituency(CID,CNAME,State,NO_OF_VOTERS)values('C006','Shimoga','KAR',1);
+
+--------------------------------------------------------------------------------------------------------------------------------------
+CID		CNAME		State		NO_OF_VOTERS
+----------------------------------------------------------------------------------
+C001		Banglore	KAR		2
+C002		Chennai		TN		1
+C003		Hydrabad	AP		1
+C004		Kochi		Kerala		1
+C005		Agra		UP		1
+C006		Shimoga		KAR		1
+----------------------------------------------------------------
+
+Table:Voter
+create table Voter(VID varchar(10)primary key,
+Vname varchar(10),
+Age number(2),
+HNO number(5),
+City varchar(10),
+State varchar(10),
+Pincode number(10),
+CID varchar(10)references Constituency);
+
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V001','Pragathi',24,351,'BANGALORE','KAR',677204,'C001');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V002','Anish',31,492,'Kochi','Kerala',732519,'C004');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V003','Unnathi',19,104,'BANGALORE','KAR',678002,'C001');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V004','Pranjal',42,55,'Chennai','TN',549326,'C002');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V005','Rishab',18,61,'Agra','UP',457218,'C005');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V006','Sanmathi',48,701,'Shimoga','KAR',577201,'C006');
+insert into Voter(VID,Vname,Age,HNO,City,State,Pincode,CID)values('V007','Stalin',27,309,'Hyderabad','AP',352719,'C003');
+
+-------------------------------------------------------------------------------------------------------------------------
+VID		Vname		Age		HNO		City		State		Pincode		CID
+----------------------------------------------------------------------------------------------------------------------------
+V001		Pragathi	24		351		BANGALORE	KAR		677201		C001
+V002		Anish		31		492		Kochi		Kerala		732519		C004
+V003		Unnathi		19		104		BANGALORE	KAR		678002		C001
+V004		Pranjal		42		55		Chennai		TN		549326		C002
+V005		Rishab		18		61		Agra		UP		457218		C005
+V006		Sanmathi	48		701		Shimoga		KAR		577201		C006
+V007		Stalin		27		309		Hydrabad	AP		352719		C003
+-----------------------------------------------------------------------------------------------------------------------------
+
+Table:Party
+create table Party(PID varchar(10)primary key,
+Pname varchar(10),
+symbole varchar (10));
+
+insert into Party(PID,Pname,symbole)values('P001','BJP','Lotus');
+insert into Party(PID,Pname,symbole)values('P002','CONGRESS','Hand');
+insert into Party(PID,Pname,symbole)values('P003','JDS','Grass');
+insert into Party(PID,Pname,symbole)values('P004','AIADMK','Cycle');
+-----------------------------------------------------------------------------------
+PID		Pname		symbole
+-------------------------------------------------------------------------
+P001		BJP		Lotus
+P002		CONGRESS	Hand
+P003		JDS		Grass
+P004		AIADMK		Cycle
+-------------------------------------------------------------------
+
+
+
+Table:Candidate
+create table Candidate(Candid varchar(10)primary key,
+Candname varchar(10),
+Age number(2),
+Phone number(10),
+State varchar(10),
+PID varchar(10)references Party);
+
+insert into Candidate(Candid,Candname,Age,Phone,State,PID)values('CD001','Kumar',59,8011425965,'TN','P004');
+insert into Candidate(Candid,Candname,Age,Phone,State,PID)values('CD002','Eswar',62,2222222222,'KAR','P001');
+insert into Candidate(Candid,Candname,Age,Phone,State,PID)values('CD003','ROHINI',36,3333333333,'KAR','P001');
+insert into Candidate(Candid,Candname,Age,Phone,State,PID)values('CD004','VINAY',47,4444444444,'UP','P002');
+insert into Candidate(Candid,Candname,Age,Phone,State,PID)values('CD005','PRANATHI',51,5555555555,'Kerala','P003');
+----------------------------------------------------------------------------------------------------------------
+CDNDID		CDNDNAME		AGE		PHONE		STATE		PID
+-------------------------------------------------------------------------------------------------------------------
+CD001		kUMAR			59		8011425965	TN		P004
+CD002		ESHWAR			62				KAR		P001
+CD003		ROHINI			36				KAR		P001
+CD004		VINAY			47				UP		P002
+CD005		PRANATHI		51		any 10digitno	Kerala		P003
+--------------------------------------------------------------------------------------------------------------
+
+
+
+
+Table:Contest
+create table Contest(CANDID varchar(10)references Candidate,
+CID varchar(10)references Constituency);
+
+insert into Contest(CANDID,CID)values('CD002','C001');
+insert into Contest(CANDID,CID)values('CD002','C006');
+insert into Contest(CANDID,CID)values('CD002','C002');
+insert into Contest(CANDID,CID)values('CD003','C006');
+insert into Contest(CANDID,CID)values('CD005','C004');
+---------------------------------------------------------------------------
+CANDID		CID
+--------------------------------------
+CD002		C001 
+CD002		C006	
+CD002		C002
+CD003		C006
+CD005		C004
+-----------------------------------------
+
+Queries:
+1)List the details of candidates who wre Constesting from more than one constituencies which belongs to different state
+	select * from Candidate
+	where CANDID in (select CANDID from Contest Ct,Constituency Co 
+	WHERE Co.CID=Ct.CID GROUP BY CANDID having count(distinct State)>1);
+----------------------------------------------------------------------------------------------------------------
+CDNDID		CDNDNAME		AGE		PHONE		STATE		PID
+-------------------------------------------------------------------------------------------------------------------
+CD002		ESHWAR			62				KAR		P001
+-------------------------------------------------------------------------------------------------------
+
+2)Display the state name having maximum number of Constituencies.
+	select State from Constituency GROUP BY State having count(*)=(select MAX(count(*)) from Constituency GROUP BY State)
+-------------------
+STATE
+-----------
+KAR
+-----------
+
+3)Crate a stored produre to insert the tuple into the voter table by checking the voter age if voter age is atleast 18 years old,then insert the tuple
+  into the voter else display the 'NOt an eligible voter msg'.
+
+create or replace procedure checkage(VID in varchar,
+   vname in varchar,
+   Age in number,
+   hno in number,
+   city in varchar,
+   State in varchar,
+   pincode in number,
+   CID in varchar)is
+begin
+If Age < 18 then
+dbms_output.put_line('Age is less than 18 Record can not be inserted');
+else
+Insert into voter values(VID,Vname,Age,HNO,city,State,Pincode,CID);
+commit;
+dbms_output.put_line('Record inserted Successfully');
+end if;
+end;
+
+
+Execution:
+set Serveroutput on
+
+call checkage('V008','Anu',17,309,'Hyderabad','AP',352719,'C003');
+
+call checkage('V009','Aarushi',19,311,'Shimoga','Karnataka',577201,'C006');
+
+
+Age is less than 18.Record can't be inserted
+call completed
+
+Record inserted Successfully
+call completed
+
+After insert
+-------------------------------------------------------------------------------------------------------------------------
+VID		Vname		Age		HNO		City		State		Pincode		CID
+----------------------------------------------------------------------------------------------------------------------------
+V009		Aarushi		19		311		Shimoga		KAR		577201		C006
+--------------------------------------------------------------------------------------------------------------------------
+  
+
+
+4)create a stored procedure to dispaly the number of voters in the specified Constituency.where the constituency is passed as an argument to  the stored procedure
+
+
+Create or replace procedure votercount(cons in varchar)as cnt number(10);
+
+	Begin
+	select no_of_voters into cnt from constituency where Cname=Cons;
+	dbms_output.put_line(' no_of_voters in '||cons||' constituency ' || cnt);
+	end;
+
+        Execution:
+	Set serveroutput on
+
+	call votercount('banglore')
+
+	
+       output: 
+        procedure Created
+
+	no_of_voters in Banglore Constituency 2
+
+	call completed
+
+
+
+
+
+5)Create a Trigger to update the count of 'number_of_voter' of the rexpective constituency in 'CONSTITUENCY' tables,After inserting a tuple into the voter tabe
+
+create or replace TRIGGER updatevotercnt
+After insert on voter 
+for each row
+Begin
+update Constituency
+Set no_of_voters=no_of_voters+1 where 
+CID=:NEW.CID;
+end;
+
+
+insert into voter values('V009','Manya',20,555,'Badravathi','karnataka',5776328,'C006');
+
+--------------------------------------------------------------------------------------------------------------------------------------
+CID		CNAME		State		NO_OF_VOTERS
+----------------------------------------------------------------------------------
+C006		Shimoga		KAR		1
+----------------------------------------------------------------
+
+
+After insert
+
+--------------------------------------------------------------------------------------------------------------------------------------
+CID		CNAME		State		NO_OF_VOTERS
+----------------------------------------------------------------------------------
+C006		Shimoga		KAR		2
+-------------------------------------------------------------- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+	
